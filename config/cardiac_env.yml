@@ -1,0 +1,54 @@
+# cardiac conda 環境定義
+# 用途: 心筋シート bulk × scRNA 比較解析プロジェクト
+# Python 3.11 ベース、scRNA-seq + bulk RNA-seq 解析の主要ライブラリを統合
+# 構築: conda env create -f config/cardiac_env.yml
+# 更新: conda env update -f config/cardiac_env.yml --prune
+# 削除: conda env remove -n cardiac
+
+name: cardiac
+
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+
+dependencies:
+  # ベース
+  - python=3.11
+  - pip
+
+  # 数値計算・データ処理
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+
+  # 可視化
+  - matplotlib
+  - seaborn
+
+  # scRNA-seq コア
+  - scanpy
+  - anndata
+  - leidenalg
+  - python-igraph
+
+  # ユーティリティ
+  - pyyaml
+  - requests
+  - tqdm
+  - h5py
+  - openpyxl
+
+  # 対話的解析
+  - jupyterlab
+  - ipykernel
+
+  # pip 経由 (conda にないか、PyPI 版が新しいもの)
+  - pip:
+    - pydeseq2          # bulk RNA-seq 差次発現解析
+    - gseapy            # GSEA / ssGSEA
+    - decoupler         # 細胞型推定・パスウェイ解析
+    - combat            # ComBat バッチ補正 (Python 実装)
+    - inmoose           # ComBat-seq (count データ用バッチ補正、pyComBat の後継)
+    - python-pptx       # 日次 schedule pptx 生成用 (2026-05-18 追加)

@@ -1,0 +1,5 @@
+ATRIAL	axis=atrial_ventricular;direction=atrial;source=SCHEDULE.md_eval_axes;note=HEY1_removed_low_expr_and_rank_reversal_see_signature_validation;date=2026-05-28	NR2F2	MYL7	NPPA	KCNA5	GJA5	TBX5
+ATRIAL_CLEAN	axis=atrial_ventricular;direction=atrial;source=2026-05-29_maturity-robust_atrial_identity;note=MYL7_NPPA_TBX5_removed_due_to_maturity_or_fetal_stress_confounding;ref=scripts28_chamber_clean_definition;date=2026-05-29	NR2F2	KCNA5	GJA5
+VENTRICULAR	axis=atrial_ventricular;direction=ventricular;source=SCHEDULE.md_eval_axes;date=2026-05-23	IRX4	MYL2	MYH7	HEY2	HAND1	MASP1
+IMMATURE	axis=maturation;direction=immature;source=optimized_combination_search_scripts55-56;note=replaced_2026-06-03_for_monotonic_mat_score_in_CM-CTS-MCTS-Fetal-Adult;date=2026-06-03	MKI67	PLK1	CCNB1	BMP10
+MATURE	axis=maturation;direction=mature;source=optimized_combination_search_scripts55-56;note=replaced_2026-06-03_for_monotonic_mat_score_with_MCTS_close_to_Fetal;date=2026-06-03	CASQ2	MYL2	TNNI3	COX6A2	TCAP

@@ -1,0 +1,186 @@
+# =============================================================
+# cell_type_dict.yaml
+# 心筋シート bulk×scRNA 比較解析プロジェクト 細胞型統合辞書
+# 作成: 2026-05-20
+# 目的: 3 データセット (A/C/E) の著者 cell type ラベルを、
+#       共通の「統合カテゴリ (level1_broad)」へマッピングする。
+#       全ラベルは各論文の著者アノテーションに準拠 (独自再アノテーションなし)。
+# 検証元:
+#   A: Global_raw.h5ad の cell_type 列 (12型)         — reports/litvinukova_annotation_audit.md
+#   C: mmc3.xlsx 'Clusters' の per-cell ラベル (9型)   — logs/_run_01e_verify_cui_labels.log
+#   E: cellinfo_updated.Rds の Celltype 列 (8型)       — logs/_run_01f_inspect_sim_cellinfo.log
+# =============================================================
+
+version: "1.0"   # 2026-05-20 確定 (Valvar→Other, Cui SMC非分離, E Pericyte→Mural の判断反映済)
+date: "2026-05-20"
+seed: 42
+
+datasets:
+  A:
+    name: "Heart Cell Atlas v2 (Litvinukova 2020 + 拡張)"
+    accession: "heartcellatlas.org"
+    h5ad: "data/reference/litvinukova/Global_raw.h5ad"
+    label_column: "cell_type"
+    modality: "snRNA + Multiome-RNA + scRNA"
+    n_cells: 704296
+    role: "成人 心房/心室 + 成熟度 reference、デコンボリューション主軸"
+  C:
+    name: "Cui 2019 (胎児 5-25 PCW)"
+    accession: "GSE106118"
+    h5ad: "data/intermediate/cui_2019_annotated.h5ad"
+    label_column: "author_cell_type"
+    region_column: "region_cui"          # CM の心房/心室分割に使用
+    modality: "STRT-seq (total RNA)"
+    n_cells_labeled: 3842                 # 全 4948 中。残り 1106 は著者フィルタ除外 (unlabeled)
+    role: "胎児期 心房/心室 + 成熟度連続"
+  E:
+    name: "Sim 2021 (Fetal/Young/Adult, LV apex)"
+    accession: "GSE156707 / GSE156703 (snRNA)"
+    h5ad: "data/intermediate/sim_2021_annotated.h5ad"
+    label_column: "author_cell_type"
+    refined_column: "author_refined"      # 38 サブクラスタ (補助)
+    modality: "snRNA (nuclei)"
+    n_cells: 54140
+    tissue: "LV apex のみ → CM は全て心室 (vCM)"
+    role: "成熟度連続 (Fetal→Young→Adult)、bulk 直接比較"
+
+# -------------------------------------------------------------
+# 統合カテゴリ (level1_broad): 3 データセット共通の 8 カテゴリ
+# pseudobulk・デコンボリューション・細胞組成比較の基本単位
+# -------------------------------------------------------------
+unified_categories:
+  CM:
+    description: "心筋細胞 / Cardiomyocyte"
+    cm_subtype_axis: true   # 心房/心室サブ軸あり (下記 cm_atrial_ventricular 参照)
+    canonical_markers: [TNNT2, ACTN2, MYH6, MYH7, TNNI3, MYL2, MYL7]
+  FB:
+    description: "線維芽細胞 / Fibroblast (弁間質細胞 valvar interstitial cell を含む)"
+    canonical_markers: [COL1A1, COL1A2, COL3A1, DCN, POSTN, PDGFRA]
+  EC:
+    description: "内皮細胞 / Endothelial cell (心内膜・リンパ管内皮を含む)"
+    canonical_markers: [PECAM1, CDH5, KDR, VWF, EGFL7]
+  Mural:
+    description: "周皮細胞 + 平滑筋細胞 / Pericyte + Smooth muscle cell"
+    canonical_markers: [PDGFRB, RGS5, ACTA2, MYH11, TAGLN, NOTCH3]
+  Immune:
+    description: "免疫細胞 / Immune (骨髄系・リンパ系・マスト・マクロファージ・B/T)"
+    canonical_markers: [PTPRC, CD68, LYZ, CD3E, CD79A, CPA3]
+  Epicardial:
+    description: "心外膜 / Epicardial (中皮 mesothelial 由来を含む)"
+    canonical_markers: [WT1, UPK3B, MSLN, BNC1, KRT19]
+  Neural:
+    description: "神経系 / Neural (ニューロン・グリア・シュワン)"
+    canonical_markers: [PLP1, NRXN1, S100B, GPM6B]
+  Other:
+    description: "その他・除外 (脂肪・赤血球・発生初期未分化など。pseudobulk では原則除外)"
+    canonical_markers: []
+
+# -------------------------------------------------------------
+# マッピング: 各データセットの著者ラベル → 統合カテゴリ
+# -------------------------------------------------------------
+mapping:
+  A:   # 列 cell_type (12型)
+    "Ventricular Cardiomyocyte": CM
+    "Atrial Cardiomyocyte": CM
+    "Fibroblast": FB
+    "Endothelial cell": EC
+    "Lymphatic Endothelial cell": EC
+    "Mural cell": Mural
+    "Myeloid": Immune
+    "Lymphoid": Immune
+    "Mast cell": Immune
+    "Neural cell": Neural
+    "Mesothelial cell": Epicardial
+    "Adipocyte": Other
+  C:   # 列 author_cell_type (9型)。parse 後の cell_type 名 (mmc3 'Clusters' の括弧内)
+    "CM": CM
+    "Fibroblast-like cell": FB   # 判断②(最終): Cui の "SMC" は ACTA2/MYH11 陰性の未成熟 SMC で
+                                 #   A/E の血管平滑筋と非対応 → 分離せず fibroblast-like を FB に一括
+    "Valvar cell": Other         # 判断①: 弁間質細胞は解剖学的に独立、bulk に弁なし → Other で除外
+    "EC": EC
+    "EP": Epicardial
+    "Macrophage": Immune
+    "Mast cell": Immune
+    "B/T cells": Immune
+    "5W": Other                # 5週の発生初期クラスタ、明確な細胞型でない → 除外候補
+    "unlabeled": Other         # 著者フィルタ除外 (1106細胞) → pseudobulk では除外
+  E:   # 列 author_cell_type (8型)。ただし下記 special_overrides を先に適用すること
+    "Cardiomyocytes": CM
+    "Fibroblast": FB
+    "Endothelial cells": EC
+    "Immune cells": Immune
+    "Epicardial cells": Epicardial   # ただし Orig_Celltype='Pericyte' の 2082 は override で Mural へ
+    "Neurons": Neural
+    "Smooth muscle cells": Mural     # SMC(430) は Mural に統合 (A の Mural と整合)
+    "Erythroid": Other
+
+# -------------------------------------------------------------
+# special_overrides: 単純な label→category では表せない条件付き再割当
+# mapping より優先して先に適用する
+# -------------------------------------------------------------
+special_overrides:
+  E:
+    # 判断(E): Sim は最終 broad で Pericyte を 'Epicardial cells' に吸収しているが、
+    # A の Mural 定義 (pericyte + SMC) に揃えるため、著者予備ラベル Orig_Celltype が
+    # 'Pericyte' の核を Mural へ引き出す。これにより E の Mural = SMC 430 + Pericyte 2082。
+    - condition: "author_cell_type == 'Epicardial cells' AND author_orig contains 'Pericyte'"
+      assign: Mural
+      n_cells_expected: 2082
+      source_column: author_orig
+
+# -------------------------------------------------------------
+# CM の心房/心室サブ軸 (主要評価軸①)
+# 統合カテゴリ CM をさらに aCM / vCM に分割する戦略。データセットごとに方法が異なる。
+# -------------------------------------------------------------
+cm_atrial_ventricular:
+  A:
+    method: "native"   # cell_type 列が直接 aCM/vCM を持つ
+    aCM_source: "Atrial Cardiomyocyte"
+    vCM_source: "Ventricular Cardiomyocyte"
+  C:
+    method: "by_region"   # 著者ラベル CM × region_cui で分割
+    aCM_rule: "author_cell_type == 'CM' AND region_cui == 'atrium'"
+    vCM_rule: "author_cell_type == 'CM' AND region_cui == 'ventricle'"
+    unassigned_rule: "author_cell_type == 'CM' AND region_cui in {valve, aorta, other_anatomical} → av 未割当 (CM_NA)"
+    note: "mmc4.xlsx に著者の CM-A/CM-V サブクラスタもあり、必要なら精密化可能"
+  E:
+    method: "fixed_ventricular"   # LV apex のみ採取 → 全 CM を vCM 扱い
+    vCM_source: "Cardiomyocytes"
+    aCM_source: null
+    note: "心房データなし → 心房/心室軸では vCM 側のみ寄与"
+
+# -------------------------------------------------------------
+# pseudobulk 集約方針
+# -------------------------------------------------------------
+pseudobulk:
+  aggregation: "sum"          # raw count を細胞型ごとに合算 (mean ではなく sum)
+  min_cells_per_group: 20     # この細胞数未満の (dataset × group × cell_type) は除外
+  exclude_categories: [Other] # Other は原則 pseudobulk から除外 (5W/unlabeled/erythroid/adipocyte)
+  group_by:
+    A: [cell_type_unified, region, donor]    # 心房/心室評価のため region 保持
+    C: [cell_type_unified, region_cui, week]  # 胎児週数で成熟度連続
+    E: [cell_type_unified, stage, sample_id]  # Fetal/Young/Adult で成熟度
+
+# -------------------------------------------------------------
+# 設計上の判断・要確認事項 (notes)
+# -------------------------------------------------------------
+notes:
+  - "【判断①(確定): Valvar cell → Other】Cui の弁間質細胞 (VIC, 427細胞) は解剖学的に独立した集団で、
+     A/E には弁細胞がなく bulk サンプル (心筋シート) にも弁は含まれない。FB 汚染回避のため Other で除外。"
+  - "【判断②(確定): Cui は SMC を分離せず FB 一括】Mural/SMC 定義を3論文で精査した結果:
+     Cui 本文は自身の 'smooth muscle cell' を『ACTA2/MYH11/TAGLN/CNN1 をほぼ発現しない未成熟 SMC』
+     (SFRP2/PI16/CPZ 陽性) と明記。A/E の血管平滑筋と非対応のため、Cui fibroblast-like は分離せず FB に一括。
+     (出所: Cui 本文 + mmc5 実データ logs/_run_01h_inspect_cui_mmc5.log)"
+  - "【判断(E)(確定): E の Pericyte を Mural へ引き出す】Sim は最終 broad で Pericyte(2082) を
+     'Epicardial cells' に吸収しているが、A の Mural 定義 (pericyte + SMC) に揃えるため special_overrides で
+     Orig_Celltype='Pericyte' を Mural へ再割当。E の Mural = SMC 430 + Pericyte 2082 = 2512。
+     (出所: 実データ logs/_run_05b_check_mural_smc_definitions.log + GitHub heart-markers-long.txt)"
+  - "【Mural 定義の非対称性 (重要)】A=Mural は pericyte+SMC を統合 (cell_state で再分離可、SMC=CNN1/ACTA2/TAGLN/MYH11)。
+     E=SMC 独立 + pericyte は別途 (override で復元)。C=Mural 相当なし (FB 一括)。
+     → 統合カテゴリ Mural は主に A と E が寄与、C は Mural ゼロ。pseudobulk/デコンボリューションで明記すること。"
+  - "【判断③: Epicardial の定義差】A は 'Mesothelial cell'、C は 'EP'、E は 'Epicardial cells'(pericyte 除外後 1392) を
+     全て Epicardial に統合。心外膜は中皮由来のため生物学的に妥当。"
+  - "【判断④: Cui 5W/unlabeled】C1(5W) は発生初期の未分化クラスタ、unlabeled は著者フィルタ除外。
+     いずれも Other とし pseudobulk から除外。"
+  - "【modality 差】A=snRNA中心(CM-rich)/一部scRNA(EC-rich)、C=STRT-seq total RNA、E=snRNA。
+     pseudobulk 比較・デコンボリューション時に technical difference を明記すること。"

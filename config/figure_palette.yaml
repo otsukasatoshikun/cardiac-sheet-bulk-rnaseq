@@ -1,0 +1,59 @@
+# =============================================================
+# figure_palette.yaml
+# Shared color/marker palette for Fig 1E-H of this study.
+#
+# Design principles:
+#   - cell_label -> fixed color, dataset -> fixed marker shape
+#   - Same biological meaning is rendered with the same color across panels
+#
+# Consumed by:
+#   - reports/revision_20260617/scripts/05_fig1e_bulk_pca.py
+#   - reports/revision_20260617/scripts/06_fig1f_ssgsea.py
+# =============================================================
+
+# 細胞型 (cell_label) ごとの色 (HEX)
+cell_color:
+  # CM 系 reference (心房 / 心室)
+  aCM: "#3366cc"        # 青 — 心房軸
+  vCM: "#d62728"        # 赤 — 心室軸
+  # bulk 4 条件 (CM 系トーン + Non-myocyte は独立色)
+  CM:   "#e377c2"       # ピンク — hiPSC-CM 単離 (赤系トーン、未熟)
+  CTS:  "#17becf"       # シアン — cardiac sheet (1 層)
+  MCTS: "#ff7f0e"       # オレンジ — multilayer cardiac sheet (組織化進む)
+  Non-myocyte: "#9467bd"  # 紫 — hiPSC-MSC 単離 (非 CM 系)。2026-06-10 旧名 "MC" から改名
+  MC:   "#9467bd"       # legacy key (旧名)。古い解析スクリプト互換のため残置、Non-myocyte と同色
+  # 非 CM reference (グレー〜パステル)
+  FB:         "#8c564b" # 茶
+  EC:         "#2ca02c" # 緑
+  Mural:      "#ff9896" # 薄赤
+  Epicardial: "#aec7e8" # 薄青
+  Epithelial: "#c5b0d5" # 薄紫
+  Neural:     "#9edae5" # 薄シアン
+  Immune:     "#7f7f7f" # グレー
+
+# データセットごとのマーカー形 (matplotlib marker code)
+dataset_marker:
+  A: "o"        # ○ Litvinukova 2020 (Heart Cell Atlas, 成人 6 領域)
+  C: "^"        # △ Cui 2019 (GSE106118, 胎児 5-25 PCW)
+  E: "s"        # □ Sim 2021 (GSE156707, Fetal/Young/Adult LV)
+  bulk: "*"     # ★ 自前 bulk (DRAGEN TV0765, n=2/condition)
+
+# データセットごとの marker サイズ (PCA 散布図用)
+dataset_size:
+  A: 120
+  C: 120
+  E: 120
+  bulk: 300
+
+# 図共通の figsize / fontsize 規約 (Main Figure 用)
+figure_defaults:
+  figsize_single: [8.0, 6.5]     # 1 panel 図 (fig05/fig07/fig08/fig01c)
+  figsize_double: [14.0, 6.5]    # 2 panel 図 (Supp のみ想定)
+  fontsize_title: 13
+  fontsize_label: 12
+  fontsize_legend: 10
+  fontsize_tick: 10
+  dpi: 200
+
+# データ出所バナー (図右上に固定表示する短文)
+data_banner: "Real bulk (DRAGEN TV0765, n=2/condition) vs scRNA refs: A=Litvinukova/HCA, C=Cui2019/GSE106118, E=Sim2021/GSE156707"
