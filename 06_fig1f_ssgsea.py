@@ -124,7 +124,7 @@ def main() -> None:
     h_marker = [
         Line2D([0], [0], marker=ds_marker["A"], color="w",
                markerfacecolor="#888", markeredgecolor="k",
-               markersize=10, label="Adult (Litvinukova 2020)"),
+               markersize=10, label="Adult (Litviňuková 2020)"),
         Line2D([0], [0], marker=ds_marker["C"], color="w",
                markerfacecolor="#888", markeredgecolor="k",
                markersize=10, label="Fetal (Cui 2019)"),

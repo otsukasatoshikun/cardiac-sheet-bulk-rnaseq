@@ -27,7 +27,7 @@ SERIES = [
     ("CTSs",     "CTSs (n=2)",           "#17becf"),
     ("MCTSs",    "MCTSs (n=2)",          "#ff7f0e"),
     ("FetalvCM", "Fetal vCM (Cui 2019, n=10)",         "#2ca02c"),
-    ("AdultvCM", "Adult vCM (Litvinukova 2020, n=70)", "#1f77b4"),
+    ("AdultvCM", "Adult vCM (Litviňuková 2020, n=70)", "#1f77b4"),
 ]
 
 BULK_MAP = {
